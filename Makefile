@@ -57,6 +57,10 @@ dist:
 	$(DIST_DIRS) zip -r $(NAME)-$(VERSION)-{}.zip {} \; && \
 	cd ..
 
+.PHONY: generate
+generate: mockgen
+	go generate $(PKG_DIRS)
+
 .PHONY: install
 install:
 	go install $(LDFLAGS)
@@ -74,7 +78,6 @@ release:
 
 .PHONY: test
 test:
-	go generate $(PKG_DIRS)
 	go test -cover -v $(PKG_DIRS)
 
 .PHONY: update-deps

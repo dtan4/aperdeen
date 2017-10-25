@@ -1,3 +1,5 @@
+//go:generate mockgen -source ../../vendor/github.com/aws/aws-sdk-go/service/apigateway/apigatewayiface/interface.go -destination apimock/apigateway.go -package apimock
+
 package aws
 
 import (
