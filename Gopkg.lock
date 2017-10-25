@@ -14,6 +14,12 @@
   version = "v1.30.0"
 
 [[projects]]
+  name = "github.com/golang/mock"
+  packages = ["gomock"]
+  revision = "13f360950a79f5864a972c786a10a50e44b69541"
+  version = "v1.0.0"
+
+[[projects]]
   name = "github.com/inconshreveable/mousetrap"
   packages = ["."]
   revision = "76626ae9c91c4f2a10f34cad8ce83ea42c93bb75"
@@ -39,6 +45,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "87be6ff73074fea6960f918f1d0a2425ed44d1f578a61ff50e76254851448215"
+  inputs-digest = "938ba77833b116fe5d84c85baf6fb7c84ce68f20d5077f7b0050569dc261a332"
   solver-name = "gps-cdcl"
   solver-version = 1
