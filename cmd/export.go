@@ -38,7 +38,7 @@ func doExport(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "cannot generate API YAML")
 	}
 
-	fmt.Println(yaml)
+	fmt.Printf(yaml)
 
 	return nil
 }
