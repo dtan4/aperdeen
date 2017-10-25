@@ -9,12 +9,22 @@ import (
 	"github.com/pkg/errors"
 )
 
+const (
+	httpMethodANY = "ANY"
+)
+
 // API represents the wrapped form of RestApi
 type API struct {
 	ID          string
 	Name        string
 	Description string
 	CreatedDate time.Time
+}
+
+// Endpoint represents API endpoint
+type Endpoint struct {
+	Path      string
+	TargetURL string
 }
 
 // Stage represents the wrapped form of Stage
@@ -55,6 +65,44 @@ func (c *Client) ListAPIs() ([]*API, error) {
 	}
 
 	return apis, nil
+}
+
+// ListEndpoints returne the endpoints of the given API
+func (c *Client) ListEndpoints(apiID string) ([]*Endpoint, error) {
+	resources, err := c.api.GetResources(&apigateway.GetResourcesInput{
+		RestApiId: aws.String(apiID),
+	})
+	if err != nil {
+		return []*Endpoint{}, errors.Wrap(err, "cannot retrieve API resources")
+	}
+
+	endpoints := []*Endpoint{}
+
+	for _, r := range resources.Items {
+		if _, ok := r.ResourceMethods[httpMethodANY]; !ok {
+			continue
+		}
+
+		integration, err := c.api.GetIntegration(&apigateway.GetIntegrationInput{
+			RestApiId:  aws.String(apiID),
+			ResourceId: r.Id,
+			HttpMethod: aws.String(httpMethodANY),
+		})
+		// skip error to include URL-unassigned endpoints in response
+		if err == nil {
+			endpoints = append(endpoints, &Endpoint{
+				Path:      aws.StringValue(r.Path),
+				TargetURL: aws.StringValue(integration.Uri),
+			})
+		} else {
+			endpoints = append(endpoints, &Endpoint{
+				Path:      aws.StringValue(r.Path),
+				TargetURL: "",
+			})
+		}
+	}
+
+	return endpoints, nil
 }
 
 // ListStages returns the list of registered APIs

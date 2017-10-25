@@ -97,6 +97,142 @@ func TestListAPIs_error(t *testing.T) {
 	}
 }
 
+func TestListEndpoints(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	api := NewMockAPIGatewayAPI(ctrl)
+	api.EXPECT().GetResources(&apigateway.GetResourcesInput{
+		RestApiId: aws.String("abcde12345"),
+	}).Return(&apigateway.GetResourcesOutput{
+		Items: []*apigateway.Resource{
+			&apigateway.Resource{
+				Id:   aws.String("abc123"),
+				Path: aws.String("/foo"),
+				ResourceMethods: map[string]*apigateway.Method{
+					"OPTIONS": &apigateway.Method{},
+				},
+			},
+			&apigateway.Resource{
+				Id:   aws.String("123abc"),
+				Path: aws.String("/foo/{proxy+}"),
+				ResourceMethods: map[string]*apigateway.Method{
+					"ANY":     &apigateway.Method{},
+					"OPTIONS": &apigateway.Method{},
+				},
+			},
+			&apigateway.Resource{
+				Id:   aws.String("aaa111"),
+				Path: aws.String("/bar"),
+				ResourceMethods: map[string]*apigateway.Method{
+					"OPTIONS": &apigateway.Method{},
+				},
+			},
+			&apigateway.Resource{
+				Id:   aws.String("111aaa"),
+				Path: aws.String("/bar/{proxy+}"),
+				ResourceMethods: map[string]*apigateway.Method{
+					"ANY":     &apigateway.Method{},
+					"OPTIONS": &apigateway.Method{},
+				},
+			},
+			&apigateway.Resource{
+				Id:   aws.String("def456"),
+				Path: aws.String("/baz"),
+				ResourceMethods: map[string]*apigateway.Method{
+					"OPTIONS": &apigateway.Method{},
+				},
+			},
+			&apigateway.Resource{
+				Id:   aws.String("456def"),
+				Path: aws.String("/baz/{proxy+}"),
+				ResourceMethods: map[string]*apigateway.Method{
+					"ANY":     &apigateway.Method{},
+					"OPTIONS": &apigateway.Method{},
+				},
+			},
+			&apigateway.Resource{
+				Id:   aws.String("1a2b3c"),
+				Path: aws.String("/"),
+			},
+		},
+	}, nil)
+	api.EXPECT().GetIntegration(&apigateway.GetIntegrationInput{
+		RestApiId:  aws.String("abcde12345"),
+		ResourceId: aws.String("123abc"),
+		HttpMethod: aws.String("ANY"),
+	}).Return(&apigateway.Integration{
+		Type: aws.String("HTTP_PROXY"),
+		Uri:  aws.String("https://example.com/foo/{proxy}"),
+	}, nil)
+	api.EXPECT().GetIntegration(&apigateway.GetIntegrationInput{
+		RestApiId:  aws.String("abcde12345"),
+		ResourceId: aws.String("111aaa"),
+		HttpMethod: aws.String("ANY"),
+	}).Return(&apigateway.Integration{
+		Type: aws.String("HTTP_PROXY"),
+		Uri:  aws.String("arn:aws:apigateway:ap-northeast-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ap-northeast-1:123456789012:function:api-backend/invocations"),
+	}, nil)
+	api.EXPECT().GetIntegration(&apigateway.GetIntegrationInput{
+		RestApiId:  aws.String("abcde12345"),
+		ResourceId: aws.String("456def"),
+		HttpMethod: aws.String("ANY"),
+	}).Return(&apigateway.Integration{}, fmt.Errorf("No integration defined for method"))
+	client := &Client{
+		api: api,
+	}
+
+	got, err := client.ListEndpoints("abcde12345")
+	if err != nil {
+		t.Errorf("got error: %s", err)
+		return
+	}
+
+	want := []*Endpoint{
+		&Endpoint{
+			Path:      "/foo/{proxy+}",
+			TargetURL: "https://example.com/foo/{proxy}",
+		},
+		&Endpoint{
+			Path:      "/bar/{proxy+}",
+			TargetURL: "arn:aws:apigateway:ap-northeast-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ap-northeast-1:123456789012:function:api-backend/invocations",
+		},
+		&Endpoint{
+			Path:      "/baz/{proxy+}",
+			TargetURL: "",
+		},
+	}
+
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("got: %s, want: %s", got, want)
+	}
+}
+
+func TestListEndpoints_error(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	api := NewMockAPIGatewayAPI(ctrl)
+	api.EXPECT().GetResources(&apigateway.GetResourcesInput{
+		RestApiId: aws.String("abcde12345"),
+	}).Return(&apigateway.GetResourcesOutput{}, fmt.Errorf("error"))
+	client := &Client{
+		api: api,
+	}
+
+	_, err := client.ListEndpoints("abcde12345")
+	if err == nil {
+		t.Errorf("got no error")
+		return
+	}
+
+	want := "cannot retrieve API resources: error"
+
+	if err.Error() != want {
+		t.Errorf("got: %#v, want: %#v", err.Error(), want)
+	}
+}
+
 func TestListStages(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
