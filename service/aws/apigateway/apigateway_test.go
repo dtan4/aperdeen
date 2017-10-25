@@ -8,6 +8,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/apigateway"
+	"github.com/dtan4/aperdeen/service/aws/apimock"
 	"github.com/golang/mock/gomock"
 )
 
@@ -15,7 +16,7 @@ func TestNewClientImpl(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	api := NewMockAPIGatewayAPI(ctrl)
+	api := apimock.NewMockAPIGatewayAPI(ctrl)
 
 	client := NewClientImpl(api)
 	if client.api != api {
@@ -27,7 +28,7 @@ func TestListAPIs(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	api := NewMockAPIGatewayAPI(ctrl)
+	api := apimock.NewMockAPIGatewayAPI(ctrl)
 	api.EXPECT().GetRestApis(&apigateway.GetRestApisInput{}).Return(&apigateway.GetRestApisOutput{
 		Items: []*apigateway.RestApi{
 			&apigateway.RestApi{
@@ -78,7 +79,7 @@ func TestListAPIs_error(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	api := NewMockAPIGatewayAPI(ctrl)
+	api := apimock.NewMockAPIGatewayAPI(ctrl)
 	api.EXPECT().GetRestApis(&apigateway.GetRestApisInput{}).Return(&apigateway.GetRestApisOutput{}, fmt.Errorf("error"))
 	client := &ClientImpl{
 		api: api,
@@ -101,7 +102,7 @@ func TestListEndpoints(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	api := NewMockAPIGatewayAPI(ctrl)
+	api := apimock.NewMockAPIGatewayAPI(ctrl)
 	api.EXPECT().GetResources(&apigateway.GetResourcesInput{
 		RestApiId: aws.String("abcde12345"),
 	}).Return(&apigateway.GetResourcesOutput{
@@ -212,7 +213,7 @@ func TestListEndpoints_error(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	api := NewMockAPIGatewayAPI(ctrl)
+	api := apimock.NewMockAPIGatewayAPI(ctrl)
 	api.EXPECT().GetResources(&apigateway.GetResourcesInput{
 		RestApiId: aws.String("abcde12345"),
 	}).Return(&apigateway.GetResourcesOutput{}, fmt.Errorf("error"))
@@ -237,7 +238,7 @@ func TestListStages(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	api := NewMockAPIGatewayAPI(ctrl)
+	api := apimock.NewMockAPIGatewayAPI(ctrl)
 	api.EXPECT().GetStages(&apigateway.GetStagesInput{
 		RestApiId: aws.String("abcde12345"),
 	}).Return(&apigateway.GetStagesOutput{
@@ -286,7 +287,7 @@ func TestListStages_error(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	api := NewMockAPIGatewayAPI(ctrl)
+	api := apimock.NewMockAPIGatewayAPI(ctrl)
 	api.EXPECT().GetStages(&apigateway.GetStagesInput{
 		RestApiId: aws.String("abcde12345"),
 	}).Return(&apigateway.GetStagesOutput{}, fmt.Errorf("error"))
