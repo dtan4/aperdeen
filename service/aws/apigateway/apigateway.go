@@ -1,3 +1,5 @@
+//go:generate mockgen -source=apigateway.go -destination=apigateway_mock.go -package=apigateway
+
 package apigateway
 
 import (

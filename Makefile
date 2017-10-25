@@ -4,7 +4,7 @@ REVISION  := $(shell git rev-parse --short HEAD)
 
 SRCS      := $(shell find . -name '*.go' -type f)
 LDFLAGS   := -ldflags="-s -w -X \"main.Version=$(VERSION)\" -X \"main.Revision=$(REVISION)\""
-NOVENDOR  := $(shell go list ./... | grep -v vendor)
+PKG_DIRS  := $(shell go list ./... | grep -v vendor | grep -v apimock)
 
 DIST_DIRS := find * -type d -exec
 
@@ -17,7 +17,7 @@ bin/$(NAME): $(SRCS)
 ci-test:
 	echo "" > coverage.txt
 	set -e; \
-	for d in $(NOVENDOR); do \
+	for d in $(PKG_DIRS); do \
 		go test -coverprofile=profile.out -covermode=atomic -v $$d; \
 		if [ -f profile.out ]; then \
 			cat profile.out >> coverage.txt; \
@@ -45,7 +45,7 @@ ifeq ($(shell command -v dep 2> /dev/null),)
 endif
 
 .PHONY: deps
-deps: dep
+deps: dep mockgen
 	dep ensure -v
 
 .PHONY: dist
@@ -61,6 +61,12 @@ dist:
 install:
 	go install $(LDFLAGS)
 
+.PHONY: mockgen
+mockgen:
+ifeq ($(shell command -v mockgen 2> /dev/null),)
+	go get -v github.com/golang/mock/mockgen
+endif
+
 .PHONY: release
 release:
 	git tag $(VERSION)
@@ -68,7 +74,8 @@ release:
 
 .PHONY: test
 test:
-	go test -cover -v $(NOVENDOR)
+	go generate $(PKG_DIRS)
+	go test -cover -v $(PKG_DIRS)
 
 .PHONY: update-deps
 update-deps: dep
