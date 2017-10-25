@@ -71,7 +71,7 @@ func TestListAPIs(t *testing.T) {
 	}
 
 	if !reflect.DeepEqual(got, want) {
-		t.Errorf("got: %#v, want: %#v", got, want)
+		t.Errorf("got: %s, want: %s", got, want)
 	}
 }
 
@@ -94,7 +94,7 @@ func TestListAPIs_error(t *testing.T) {
 	want := "cannot retrieve registered APIs: error"
 
 	if err.Error() != want {
-		t.Errorf("got: %#v, want: %#v", err.Error(), want)
+		t.Errorf("got: %q, want: %q", err.Error(), want)
 	}
 }
 
@@ -230,7 +230,7 @@ func TestListEndpoints_error(t *testing.T) {
 	want := "cannot retrieve API resources: error"
 
 	if err.Error() != want {
-		t.Errorf("got: %#v, want: %#v", err.Error(), want)
+		t.Errorf("got: %q, want: %q", err.Error(), want)
 	}
 }
 
@@ -279,7 +279,7 @@ func TestListStages(t *testing.T) {
 	}
 
 	if !reflect.DeepEqual(got, want) {
-		t.Errorf("got: %#v, want: %#v", got, want)
+		t.Errorf("got: %s, want: %s", got, want)
 	}
 }
 
@@ -304,6 +304,6 @@ func TestListStages_error(t *testing.T) {
 	want := "cannot retrieve API stages: error"
 
 	if err.Error() != want {
-		t.Errorf("got: %#v, want: %#v", err.Error(), want)
+		t.Errorf("got: %q, want: %q", err.Error(), want)
 	}
 }
