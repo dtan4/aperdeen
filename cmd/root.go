@@ -9,8 +9,10 @@ import (
 
 // RootCmd represents the base command when called without any subcommands
 var RootCmd = &cobra.Command{
-	Use:   "aperdeen",
-	Short: "Amazon API Gateway client and local proxy",
+	SilenceUsage:  true,
+	SilenceErrors: true,
+	Use:           "aperdeen",
+	Short:         "Amazon API Gateway client and local proxy",
 }
 
 var rootOpts = struct {
