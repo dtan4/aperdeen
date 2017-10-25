@@ -3,12 +3,10 @@ package cmd
 import (
 	"fmt"
 	"os"
-	"sort"
 	"strings"
 	"text/tabwriter"
 
-	"github.com/dtan4/aperdeen/service/aws"
-	"github.com/dtan4/aperdeen/service/aws/apigateway"
+	"github.com/dtan4/aperdeen/backend"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
@@ -31,36 +29,17 @@ func doList(cmd *cobra.Command, args []string) error {
 	}
 	apiName := args[0]
 
-	if err := aws.Initialize(rootOpts.region); err != nil {
+	var be backend.Backend
+
+	be, err := backend.NewAmazonAPIGateway(rootOpts.region)
+	if err != nil {
 		return errors.Wrap(err, "cannot create AWS API clients")
 	}
 
-	apis, err := aws.APIGateway.ListAPIs()
-	if err != nil {
-		return errors.Wrap(err, "cannot retrieve APIs")
-	}
-
-	var api *apigateway.API
-
-	for _, a := range apis {
-		if a.Name == apiName {
-			api = a
-			break
-		}
-	}
-
-	if api == nil {
-		return errors.Errorf("api %q not found", apiName)
-	}
-
-	endpoints, err := aws.APIGateway.ListEndpoints(api.ID)
+	endpoints, err := be.ListEndpoints(apiName)
 	if err != nil {
 		return errors.Wrap(err, "cannot retrieve endpoints")
 	}
-
-	sort.Slice(endpoints, func(i, j int) bool {
-		return strings.Compare(endpoints[i].Path, endpoints[j].Path) < 0
-	})
 
 	w := tabwriter.NewWriter(os.Stdout, 0, 0, 1, ' ', 0)
 

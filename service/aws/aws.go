@@ -8,13 +8,17 @@ import (
 	"github.com/pkg/errors"
 )
 
-var (
-	// APIGateway represents API Gateway Client
-	APIGateway *apigateway.Client
-)
+// CreateAPIGatewayClient creates API Gateway client with valid session
+func CreateAPIGatewayClient(region string) (*apigateway.Client, error) {
+	sess, err := newSession(region)
+	if err != nil {
+		return nil, errors.Wrap(err, "cannot make new AWS session")
+	}
 
-// Initialize initializes AWS API clients
-func Initialize(region string) error {
+	return apigateway.NewClient(apigatewayapi.New(sess)), nil
+}
+
+func newSession(region string) (*session.Session, error) {
 	var (
 		sess *session.Session
 		err  error
@@ -23,16 +27,14 @@ func Initialize(region string) error {
 	if region == "" {
 		sess, err = session.NewSession()
 		if err != nil {
-			return errors.Wrap(err, "Failed to create new AWS session.")
+			return nil, errors.Wrap(err, "cannot make new AWS session.")
 		}
 	} else {
 		sess, err = session.NewSession(&aws.Config{Region: aws.String(region)})
 		if err != nil {
-			return errors.Wrap(err, "Failed to create new AWS session.")
+			return nil, errors.Wrap(err, "cannot make new AWS session.")
 		}
 	}
 
-	APIGateway = apigateway.NewClient(apigatewayapi.New(sess))
-
-	return nil
+	return sess, nil
 }
