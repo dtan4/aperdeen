@@ -1,39 +1,85 @@
-// Copyright © 2017 NAME HERE <EMAIL ADDRESS>
-
-
 package cmd
 
 import (
 	"fmt"
+	"os"
+	"sort"
+	"strings"
+	"text/tabwriter"
 
+	"github.com/dtan4/aperdeen/service/aws"
+	"github.com/dtan4/aperdeen/service/aws/apigateway"
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
 
 // listCmd represents the list command
 var listCmd = &cobra.Command{
-	Use:   "list",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Use:   "list APINAME",
+	Short: "List API endpoints",
+	RunE:  doList,
+}
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("list called")
-	},
+var listHeader = []string{
+	"PATH",
+	"ENDPOINT",
+}
+
+func doList(cmd *cobra.Command, args []string) error {
+	if len(args) != 1 {
+		return errors.New("APINAME is required")
+	}
+	apiName := args[0]
+
+	if err := aws.Initialize(rootOpts.region); err != nil {
+		return errors.Wrap(err, "cannot create AWS API clients")
+	}
+
+	apis, err := aws.APIGateway.ListAPIs()
+	if err != nil {
+		return errors.Wrap(err, "cannot retrieve APIs")
+	}
+
+	var api *apigateway.API
+
+	for _, a := range apis {
+		if a.Name == apiName {
+			api = a
+			break
+		}
+	}
+
+	if api == nil {
+		return errors.Errorf("api %q not found", apiName)
+	}
+
+	endpoints, err := aws.APIGateway.ListEndpoints(api.ID)
+	if err != nil {
+		return errors.Wrap(err, "cannot retrieve endpoints")
+	}
+
+	sort.Slice(endpoints, func(i, j int) bool {
+		return strings.Compare(endpoints[i].Path, endpoints[j].Path) < 0
+	})
+
+	w := tabwriter.NewWriter(os.Stdout, 0, 0, 1, ' ', 0)
+
+	fmt.Fprintln(w, strings.Join(listHeader, "\t"))
+
+	for _, endpoint := range endpoints {
+		fmt.Fprintf(
+			w,
+			"%s\t%s\n",
+			strings.Replace(endpoint.Path, "{proxy+}", "*", -1),
+			strings.Replace(endpoint.TargetURL, "{proxy}", "*", -1),
+		)
+	}
+
+	w.Flush()
+
+	return nil
 }
 
 func init() {
 	RootCmd.AddCommand(listCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// listCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// listCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
