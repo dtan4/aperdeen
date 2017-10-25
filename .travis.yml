@@ -1,0 +1,26 @@
+language: go
+go:
+  - '1.9.x'
+branches:
+  only:
+    - master
+env:
+  global:
+    secure: "E+6YLANv7HxGAMlzKkHXlTgvSM+RDIBTxDPNibqFY2NFL5wfcFke07Z2g2B5Y4AfTTfXfuot34x5rVP3X3XGwuzAzcpefWTfmymoR1wCUTvDqQPVMkZCPMdCd9ncx0oEoFLYNizhzeN2zvuJzMxz3YtV65TNesclJwBuITNStdK1GCgw0qPTL4tUhde+v3wmq9rLaC8NxQm1DR/uatrYJ3rIlWnKwEVgJwcXhwXKVnya6fZlbfKoqAPon6KeHutmwWvD97w9RbqoG6j06xrb/HVP6tLbLePOkR7GED/CHQoij75tqrjgl2ZhZE/S9nyA6nk8sjC0xTGnEkEtawjpEf5V2uP01z5LsSa7Ahb80ixkKCmkZ5Qbub5qyLd8CgZ3b8rgcfNEII3JMIGtOHlDi/nHVHroHWXLKrJQaAIVyC4++FoFfWk6N1GWmr/O7xJAvZhgCe+ctEX19NMZTw64WQ10oUdKqzppkuAgUtWmmmzy0g+vRoLuDXkT6BHybNAH6OaAvl/BJRNsOaH4BfUO+36bTsMJ8lTKxisO4qpsUQSUYIL9wfcGMd7yirWUrE+ZDA87dlX6h2/a6uRviwD+dRVsGwRtGppyQP/e73SIyi9ER4FfsE9NcfnvDPwr3hPfVeh2IRcqUYJG3ecwKBmjHGzNjIheDpV2AoA/huaVz/s="
+install:
+  - make deps
+script:
+  - make ci-test
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
+before_deploy:
+  - if [ ! -z $TRAVIS_TAG ]; then make cross-build; fi
+  - if [ ! -z $TRAVIS_TAG ]; then make dist; fi
+deploy:
+  - provider: releases
+    skip_cleanup: true
+    api_key: $GITHUB_TOKEN
+    file_glob: true
+    file: 'dist/*.{tar.gz,zip}'
+    on:
+      tags: true
