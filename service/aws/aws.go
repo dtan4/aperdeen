@@ -9,13 +9,13 @@ import (
 )
 
 // CreateAPIGatewayClient creates API Gateway client with valid session
-func CreateAPIGatewayClient(region string) (*apigateway.Client, error) {
+func CreateAPIGatewayClient(region string) (*apigateway.ClientImpl, error) {
 	sess, err := newSession(region)
 	if err != nil {
 		return nil, errors.Wrap(err, "cannot make new AWS session")
 	}
 
-	return apigateway.NewClient(apigatewayapi.New(sess)), nil
+	return apigateway.NewClientImpl(apigatewayapi.New(sess)), nil
 }
 
 func newSession(region string) (*session.Session, error) {

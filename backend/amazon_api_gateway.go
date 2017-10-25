@@ -12,7 +12,7 @@ import (
 // AmazonAPIGateway represents Amazon API Gateway
 // implements Backend
 type AmazonAPIGateway struct {
-	client *apigateway.Client
+	client apigateway.Client
 }
 
 // NewAmazonAPIGateway creates new AmazonAPIGateway object

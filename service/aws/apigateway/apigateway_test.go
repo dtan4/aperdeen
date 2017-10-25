@@ -11,13 +11,13 @@ import (
 	"github.com/golang/mock/gomock"
 )
 
-func TestNewClient(t *testing.T) {
+func TestNewClientImpl(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	api := NewMockAPIGatewayAPI(ctrl)
 
-	client := NewClient(api)
+	client := NewClientImpl(api)
 	if client.api != api {
 		t.Error("invalid client")
 	}
@@ -44,7 +44,7 @@ func TestListAPIs(t *testing.T) {
 			},
 		},
 	}, nil)
-	client := &Client{
+	client := &ClientImpl{
 		api: api,
 	}
 
@@ -80,7 +80,7 @@ func TestListAPIs_error(t *testing.T) {
 
 	api := NewMockAPIGatewayAPI(ctrl)
 	api.EXPECT().GetRestApis(&apigateway.GetRestApisInput{}).Return(&apigateway.GetRestApisOutput{}, fmt.Errorf("error"))
-	client := &Client{
+	client := &ClientImpl{
 		api: api,
 	}
 
@@ -178,7 +178,7 @@ func TestListEndpoints(t *testing.T) {
 		ResourceId: aws.String("456def"),
 		HttpMethod: aws.String("ANY"),
 	}).Return(&apigateway.Integration{}, fmt.Errorf("No integration defined for method"))
-	client := &Client{
+	client := &ClientImpl{
 		api: api,
 	}
 
@@ -216,7 +216,7 @@ func TestListEndpoints_error(t *testing.T) {
 	api.EXPECT().GetResources(&apigateway.GetResourcesInput{
 		RestApiId: aws.String("abcde12345"),
 	}).Return(&apigateway.GetResourcesOutput{}, fmt.Errorf("error"))
-	client := &Client{
+	client := &ClientImpl{
 		api: api,
 	}
 
@@ -254,7 +254,7 @@ func TestListStages(t *testing.T) {
 			},
 		},
 	}, nil)
-	client := &Client{
+	client := &ClientImpl{
 		api: api,
 	}
 
@@ -290,7 +290,7 @@ func TestListStages_error(t *testing.T) {
 	api.EXPECT().GetStages(&apigateway.GetStagesInput{
 		RestApiId: aws.String("abcde12345"),
 	}).Return(&apigateway.GetStagesOutput{}, fmt.Errorf("error"))
-	client := &Client{
+	client := &ClientImpl{
 		api: api,
 	}
 

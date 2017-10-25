@@ -34,20 +34,27 @@ type Stage struct {
 	LastUpdatedDate time.Time
 }
 
-// Client represents the wrapper of Amazon API Gateway API client
-type Client struct {
+// Client is the wrapper of Amazon API Gateway API client
+type Client interface {
+	ListAPIs() ([]*API, error)
+	ListEndpoints(apiID string) ([]*Endpoint, error)
+	ListStages(apiID string) ([]*Stage, error)
+}
+
+// ClientImpl represents the implementation of Client
+type ClientImpl struct {
 	api apigatewayiface.APIGatewayAPI
 }
 
-// NewClient creates new Client object
-func NewClient(api apigatewayiface.APIGatewayAPI) *Client {
-	return &Client{
+// NewClientImpl creates new ClientImpl object
+func NewClientImpl(api apigatewayiface.APIGatewayAPI) *ClientImpl {
+	return &ClientImpl{
 		api: api,
 	}
 }
 
 // ListAPIs returns the list of registered APIs
-func (c *Client) ListAPIs() ([]*API, error) {
+func (c *ClientImpl) ListAPIs() ([]*API, error) {
 	resp, err := c.api.GetRestApis(&apigateway.GetRestApisInput{})
 	if err != nil {
 		return []*API{}, errors.Wrap(err, "cannot retrieve registered APIs")
@@ -68,7 +75,7 @@ func (c *Client) ListAPIs() ([]*API, error) {
 }
 
 // ListEndpoints returne the endpoints of the given API
-func (c *Client) ListEndpoints(apiID string) ([]*Endpoint, error) {
+func (c *ClientImpl) ListEndpoints(apiID string) ([]*Endpoint, error) {
 	resources, err := c.api.GetResources(&apigateway.GetResourcesInput{
 		RestApiId: aws.String(apiID),
 	})
@@ -106,7 +113,7 @@ func (c *Client) ListEndpoints(apiID string) ([]*Endpoint, error) {
 }
 
 // ListStages returns the list of registered APIs
-func (c *Client) ListStages(apiID string) ([]*Stage, error) {
+func (c *ClientImpl) ListStages(apiID string) ([]*Stage, error) {
 	resp, err := c.api.GetStages(&apigateway.GetStagesInput{
 		RestApiId: aws.String(apiID),
 	})
