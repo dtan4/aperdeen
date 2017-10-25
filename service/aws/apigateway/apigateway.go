@@ -17,6 +17,13 @@ type API struct {
 	CreatedDate time.Time
 }
 
+// Stage represents the wrapped form of Stage
+type Stage struct {
+	Name            string
+	DeploymentID    string
+	LastUpdatedDate time.Time
+}
+
 // Client represents the wrapper of Amazon API Gateway API client
 type Client struct {
 	api apigatewayiface.APIGatewayAPI
@@ -48,4 +55,26 @@ func (c *Client) ListAPIs() ([]*API, error) {
 	}
 
 	return apis, nil
+}
+
+// ListStages returns the list of registered APIs
+func (c *Client) ListStages(apiID string) ([]*Stage, error) {
+	resp, err := c.api.GetStages(&apigateway.GetStagesInput{
+		RestApiId: aws.String(apiID),
+	})
+	if err != nil {
+		return []*Stage{}, errors.Wrap(err, "cannot retrieve API stages")
+	}
+
+	stages := []*Stage{}
+
+	for _, item := range resp.Item {
+		stages = append(stages, &Stage{
+			Name:            aws.StringValue(item.StageName),
+			DeploymentID:    aws.StringValue(item.DeploymentId),
+			LastUpdatedDate: aws.TimeValue(item.LastUpdatedDate),
+		})
+	}
+
+	return stages, nil
 }

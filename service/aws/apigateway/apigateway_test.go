@@ -96,3 +96,77 @@ func TestListAPIs_error(t *testing.T) {
 		t.Errorf("got: %#v, want: %#v", err.Error(), want)
 	}
 }
+
+func TestListStages(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	api := NewMockAPIGatewayAPI(ctrl)
+	api.EXPECT().GetStages(&apigateway.GetStagesInput{
+		RestApiId: aws.String("abcde12345"),
+	}).Return(&apigateway.GetStagesOutput{
+		Item: []*apigateway.Stage{
+			&apigateway.Stage{
+				StageName:       aws.String("prod"),
+				DeploymentId:    aws.String("abc123"),
+				LastUpdatedDate: aws.Time(time.Date(2017, 10, 25, 12, 34, 56, 0, time.UTC).UTC()),
+			},
+			&apigateway.Stage{
+				StageName:       aws.String("qa"),
+				DeploymentId:    aws.String("123abc"),
+				LastUpdatedDate: aws.Time(time.Date(2017, 10, 25, 12, 00, 00, 0, time.UTC).UTC()),
+			},
+		},
+	}, nil)
+	client := &Client{
+		api: api,
+	}
+
+	got, err := client.ListStages("abcde12345")
+	if err != nil {
+		t.Errorf("got error: %s", err)
+		return
+	}
+
+	want := []*Stage{
+		&Stage{
+			Name:            "prod",
+			DeploymentID:    "abc123",
+			LastUpdatedDate: time.Date(2017, 10, 25, 12, 34, 56, 0, time.UTC).UTC(),
+		},
+		&Stage{
+			Name:            "qa",
+			DeploymentID:    "123abc",
+			LastUpdatedDate: time.Date(2017, 10, 25, 12, 00, 00, 0, time.UTC).UTC(),
+		},
+	}
+
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("got: %#v, want: %#v", got, want)
+	}
+}
+
+func TestListStages_error(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	api := NewMockAPIGatewayAPI(ctrl)
+	api.EXPECT().GetStages(&apigateway.GetStagesInput{
+		RestApiId: aws.String("abcde12345"),
+	}).Return(&apigateway.GetStagesOutput{}, fmt.Errorf("error"))
+	client := &Client{
+		api: api,
+	}
+
+	_, err := client.ListStages("abcde12345")
+	if err == nil {
+		t.Errorf("got no error")
+		return
+	}
+
+	want := "cannot retrieve API stages: error"
+
+	if err.Error() != want {
+		t.Errorf("got: %#v, want: %#v", err.Error(), want)
+	}
+}
