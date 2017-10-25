@@ -3,7 +3,7 @@
 
 [[projects]]
   name = "github.com/aws/aws-sdk-go"
-  packages = ["aws","aws/awserr","aws/awsutil","aws/client","aws/client/metadata","aws/credentials","aws/endpoints","aws/request","aws/signer/v4","internal/shareddefaults","private/protocol","private/protocol/json/jsonutil","private/protocol/jsonrpc","private/protocol/rest","private/protocol/restjson","service/apigateway","service/apigateway/apigatewayiface"]
+  packages = ["aws","aws/awserr","aws/awsutil","aws/client","aws/client/metadata","aws/corehandlers","aws/credentials","aws/credentials/ec2rolecreds","aws/credentials/endpointcreds","aws/credentials/stscreds","aws/defaults","aws/ec2metadata","aws/endpoints","aws/request","aws/session","aws/signer/v4","internal/shareddefaults","private/protocol","private/protocol/json/jsonutil","private/protocol/jsonrpc","private/protocol/query","private/protocol/query/queryutil","private/protocol/rest","private/protocol/restjson","private/protocol/xml/xmlutil","service/apigateway","service/apigateway/apigatewayiface","service/sts"]
   revision = "f426770fd5a4bae6186b280d4af7dca83a4cdef4"
   version = "v1.12.17"
 
@@ -51,6 +51,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "1d1286dcbfd558ef1e4ab620446956007778a8aa123dd3082150378a117c46ba"
+  inputs-digest = "69665a5c6322b6d7be09a8a42d3134ee2ca0ce3af1ebc78ee1b3ffd0c3c6b251"
   solver-name = "gps-cdcl"
   solver-version = 1
