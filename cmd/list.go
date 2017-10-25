@@ -49,8 +49,8 @@ func doList(cmd *cobra.Command, args []string) error {
 		fmt.Fprintf(
 			w,
 			"%s\t%s\n",
-			strings.Replace(endpoint.Path, "{proxy+}", "*", -1),
-			strings.Replace(endpoint.TargetURL, "{proxy}", "*", -1),
+			endpoint.Path,
+			endpoint.TargetURL,
 		)
 	}
 

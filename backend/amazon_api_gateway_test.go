@@ -54,16 +54,16 @@ func TestListEndpoints(t *testing.T) {
 
 	want := []*Endpoint{
 		&Endpoint{
-			Path:      "/bar/{proxy+}",
+			Path:      "/bar/*",
 			TargetURL: "arn:aws:apigateway:ap-northeast-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ap-northeast-1:123456789012:function:api-backend/invocations",
 		},
 		&Endpoint{
-			Path:      "/baz/{proxy+}",
+			Path:      "/baz/*",
 			TargetURL: "",
 		},
 		&Endpoint{
-			Path:      "/foo/{proxy+}",
-			TargetURL: "https://example.com/foo/{proxy}",
+			Path:      "/foo/*",
+			TargetURL: "https://example.com/foo/*",
 		},
 	}
 

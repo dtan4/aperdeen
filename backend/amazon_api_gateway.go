@@ -56,8 +56,8 @@ func (g *AmazonAPIGateway) ListEndpoints(apiName string) ([]*Endpoint, error) {
 
 	for _, ep := range eps {
 		endpoints = append(endpoints, &Endpoint{
-			Path:      ep.Path,
-			TargetURL: ep.TargetURL,
+			Path:      strings.Replace(ep.Path, "{proxy+}", "*", -1),
+			TargetURL: strings.Replace(ep.TargetURL, "{proxy}", "*", -1),
 		})
 	}
 
