@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/dtan4/aperdeen/backend"
+	"github.com/dtan4/aperdeen/model"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
@@ -33,7 +34,9 @@ func doExport(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "cannot retrieve endpoints")
 	}
 
-	yaml, err := backend.ConvertEndpointsToYAML(apiName, endpoints)
+	api := model.BuildAPIWithEndpoints(apiName, endpoints)
+
+	yaml, err := api.ToYAML()
 	if err != nil {
 		return errors.Wrap(err, "cannot generate API YAML")
 	}

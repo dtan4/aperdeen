@@ -1,5 +1,28 @@
 package model
 
+import (
+	"github.com/pkg/errors"
+	"gopkg.in/yaml.v2"
+)
+
+/*
+name: acme-api
+auth_function:
+  prod: <function arn>
+  qa: <function arn>
+  local: <function arn>
+endpoints:
+  "/foo/ping":
+    auth: false
+    url: "https://foo${variable.prefix}.example.com/ping"
+  "/foo/*":
+    auth: true
+    url: "https://foo${variable.prefix}.example.com/*"
+  "/bar/*":
+    auth: true
+    url: "https://bar.example.com/*"
+*/
+
 // API represents a entire model of API
 type API struct {
 	Name      string               `yaml:"name"`
@@ -24,4 +47,14 @@ func BuildAPIWithEndpoints(apiName string, endpoints []*Endpoint) *API {
 		Name:      apiName,
 		Endpoints: eps,
 	}
+}
+
+// ToYAML converts API object to YAML
+func (a *API) ToYAML() (string, error) {
+	d, err := yaml.Marshal(a)
+	if err != nil {
+		return "", errors.Wrap(err, "cannot convert to YAML")
+	}
+
+	return string(d), nil
 }

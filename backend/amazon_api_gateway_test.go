@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/dtan4/aperdeen/model"
 	"github.com/dtan4/aperdeen/service/aws/apigateway"
 	"github.com/golang/mock/gomock"
 )
@@ -52,16 +53,16 @@ func TestListEndpoints(t *testing.T) {
 		return
 	}
 
-	want := []*Endpoint{
-		&Endpoint{
+	want := []*model.Endpoint{
+		&model.Endpoint{
 			Path:      "/bar/*",
 			TargetURL: "arn:aws:apigateway:ap-northeast-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ap-northeast-1:123456789012:function:api-backend/invocations",
 		},
-		&Endpoint{
+		&model.Endpoint{
 			Path:      "/baz/*",
 			TargetURL: "",
 		},
-		&Endpoint{
+		&model.Endpoint{
 			Path:      "/foo/*",
 			TargetURL: "https://example.com/foo/*",
 		},
