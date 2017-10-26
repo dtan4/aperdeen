@@ -4,6 +4,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/dtan4/aperdeen/model"
 	"github.com/dtan4/aperdeen/service/aws"
 	"github.com/dtan4/aperdeen/service/aws/apigateway"
 	"github.com/pkg/errors"
@@ -28,10 +29,10 @@ func NewAmazonAPIGateway(region string) (*AmazonAPIGateway, error) {
 }
 
 // ListEndpoints returns the list of registered API endpoints
-func (g *AmazonAPIGateway) ListEndpoints(apiName string) ([]*Endpoint, error) {
+func (g *AmazonAPIGateway) ListEndpoints(apiName string) ([]*model.Endpoint, error) {
 	apis, err := g.client.ListAPIs()
 	if err != nil {
-		return []*Endpoint{}, errors.Wrap(err, "cannot retrieve APIs")
+		return []*model.Endpoint{}, errors.Wrap(err, "cannot retrieve APIs")
 	}
 
 	var api *apigateway.API
@@ -44,18 +45,18 @@ func (g *AmazonAPIGateway) ListEndpoints(apiName string) ([]*Endpoint, error) {
 	}
 
 	if api == nil {
-		return []*Endpoint{}, errors.Errorf("api %q not found", apiName)
+		return []*model.Endpoint{}, errors.Errorf("api %q not found", apiName)
 	}
 
 	eps, err := g.client.ListEndpoints(api.ID)
 	if err != nil {
-		return []*Endpoint{}, errors.Wrap(err, "cannot retrieve endpoints")
+		return []*model.Endpoint{}, errors.Wrap(err, "cannot retrieve endpoints")
 	}
 
-	endpoints := []*Endpoint{}
+	endpoints := []*model.Endpoint{}
 
 	for _, ep := range eps {
-		endpoints = append(endpoints, &Endpoint{
+		endpoints = append(endpoints, &model.Endpoint{
 			Path:      strings.Replace(ep.Path, "{proxy+}", "*", -1),
 			TargetURL: strings.Replace(ep.TargetURL, "{proxy}", "*", -1),
 		})
