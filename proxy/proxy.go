@@ -8,7 +8,6 @@ import (
 
 	"github.com/dtan4/aperdeen/model"
 	"github.com/gorilla/mux"
-	"github.com/pkg/errors"
 )
 
 var availableSchemas = map[string]bool{
@@ -23,11 +22,13 @@ func CreateProxyHandler(endpoints map[string]*model.Endpoint) (http.Handler, err
 	for _, ep := range endpoints {
 		target, err := url.Parse(ep.TargetURL)
 		if err != nil {
-			return nil, errors.Wrapf(err, "cannot parse %q as URL", ep.TargetURL)
+			// return nil, errors.Wrapf(err, "cannot parse %q as URL", ep.TargetURL)
+			continue
 		}
 
 		if _, ok := availableSchemas[target.Scheme]; !ok {
-			return nil, errors.Errorf("invalid URI schema: %s", target.Scheme)
+			// return nil, errors.Errorf("invalid URI schema: %s", target.Scheme)
+			continue
 		}
 
 		d := director(target)

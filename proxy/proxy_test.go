@@ -47,6 +47,14 @@ func TestCreateProxyHandler(t *testing.T) {
 			Path:      "/foo/*",
 			TargetURL: fmt.Sprintf("%s/*", origin.URL),
 		},
+		"/invalid/*": &model.Endpoint{
+			Path:      "/invalid/*",
+			TargetURL: "thisisainvalidurl",
+		},
+		"/lambda/*": &model.Endpoint{
+			Path:      "/lambda/*",
+			TargetURL: "arn:aws:apigateway:ap-northeast-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ap-northeast-1:123456789012:function:api-backend/invocations",
+		},
 	}
 
 	handler, err := CreateProxyHandler(endpoints)
