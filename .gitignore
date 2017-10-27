@@ -25,3 +25,4 @@ vendor/
 /bin
 /coverage.txt
 /dist
+/api.yaml

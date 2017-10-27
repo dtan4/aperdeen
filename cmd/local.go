@@ -1,39 +1,64 @@
-// Copyright © 2017 NAME HERE <EMAIL ADDRESS>
-
-
 package cmd
 
 import (
 	"fmt"
+	"io/ioutil"
+	"net/http"
 
+	"github.com/dtan4/aperdeen/model"
+	"github.com/dtan4/aperdeen/proxy"
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
+)
+
+const (
+	defaultPort = 8080
 )
 
 // localCmd represents the local command
 var localCmd = &cobra.Command{
 	Use:   "local",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Short: "Start local API Gateway",
+	RunE:  doLocal,
+}
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("local called")
-	},
+var localOpts = struct {
+	filename string
+	port     int
+}{}
+
+func doLocal(cmd *cobra.Command, args []string) error {
+	if localOpts.filename == "" {
+		return errors.New("filename (-f, --filename) is required")
+	}
+
+	body, err := ioutil.ReadFile(localOpts.filename)
+	if err != nil {
+		return errors.Wrapf(err, "cannot read %s", localOpts.filename)
+	}
+
+	api, err := model.APIFromYAML(body)
+	if err != nil {
+		return errors.Wrapf(err, "cannot parse %s", localOpts.filename)
+	}
+
+	handler, err := proxy.CreateProxyHandler(api.Endpoints)
+	if err != nil {
+		return errors.Wrap(err, "cannot create proxy handler")
+	}
+
+	addr := fmt.Sprintf(":%d", localOpts.port)
+	fmt.Printf("server started at %s ...\n", addr)
+	if err := http.ListenAndServe(addr, handler); err != nil {
+		return errors.Wrapf(err, "proxy server at %s returns error", addr)
+	}
+
+	return nil
 }
 
 func init() {
 	RootCmd.AddCommand(localCmd)
 
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// localCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// localCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	localCmd.Flags().StringVarP(&localOpts.filename, "filename", "f", "", "API definition file")
+	localCmd.Flags().IntVarP(&localOpts.port, "port", "p", defaultPort, "local proxy's port number")
 }
