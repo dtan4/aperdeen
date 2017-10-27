@@ -49,6 +49,21 @@ func BuildAPIWithEndpoints(apiName string, endpoints []*Endpoint) *API {
 	}
 }
 
+// APIFromYAML creates API object from YAML
+func APIFromYAML(body []byte) (*API, error) {
+	var api API
+
+	if err := yaml.Unmarshal(body, &api); err != nil {
+		return nil, errors.Wrap(err, "cannot parse the given YAML as API")
+	}
+
+	for k := range api.Endpoints {
+		api.Endpoints[k].Path = k
+	}
+
+	return &api, nil
+}
+
 // ToYAML converts API object to YAML
 func (a *API) ToYAML() (string, error) {
 	d, err := yaml.Marshal(a)
