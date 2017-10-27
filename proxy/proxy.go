@@ -19,7 +19,7 @@ var availableSchemas = map[string]bool{
 func CreateProxyHandler(endpoints map[string]*model.Endpoint) (http.Handler, error) {
 	r := mux.NewRouter().StrictSlash(true)
 
-	for _, ep := range endpoints {
+	for p, ep := range endpoints {
 		target, err := url.Parse(ep.TargetURL)
 		if err != nil {
 			// return nil, errors.Wrapf(err, "cannot parse %q as URL", ep.TargetURL)
@@ -34,13 +34,13 @@ func CreateProxyHandler(endpoints map[string]*model.Endpoint) (http.Handler, err
 		d := director(target)
 
 		// add "/foo/{rest:.*}" route from "/foo/*"
-		r.Handle(strings.Replace(ep.Path, "*", "{rest:.*}", -1), &httputil.ReverseProxy{
+		r.Handle(strings.Replace(p, "*", "{rest:.*}", -1), &httputil.ReverseProxy{
 			Director: d,
 		})
 
 		// add "/foo" route from "/foo/*"
-		if strings.HasSuffix(ep.Path, "/*") {
-			r.Handle(strings.TrimSuffix(ep.Path, "/*"), &httputil.ReverseProxy{
+		if strings.HasSuffix(p, "/*") {
+			r.Handle(strings.TrimSuffix(p, "/*"), &httputil.ReverseProxy{
 				Director: d,
 			})
 		}
