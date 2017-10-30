@@ -11,19 +11,19 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// listCmd represents the list command
-var listCmd = &cobra.Command{
-	Use:   "list APINAME",
+// endpointsCmd represents the endpoints command
+var endpointsCmd = &cobra.Command{
+	Use:   "endpoints APINAME",
 	Short: "List API endpoints",
-	RunE:  doList,
+	RunE:  doEndpoints,
 }
 
-var listHeader = []string{
+var endpointsHeader = []string{
 	"PATH",
 	"ENDPOINT",
 }
 
-func doList(cmd *cobra.Command, args []string) error {
+func doEndpoints(cmd *cobra.Command, args []string) error {
 	if len(args) != 1 {
 		return errors.New("APINAME is required")
 	}
@@ -43,7 +43,7 @@ func doList(cmd *cobra.Command, args []string) error {
 
 	w := tabwriter.NewWriter(os.Stdout, 0, 0, 1, ' ', 0)
 
-	fmt.Fprintln(w, strings.Join(listHeader, "\t"))
+	fmt.Fprintln(w, strings.Join(endpointsHeader, "\t"))
 
 	for _, endpoint := range endpoints {
 		fmt.Fprintf(
@@ -60,5 +60,5 @@ func doList(cmd *cobra.Command, args []string) error {
 }
 
 func init() {
-	RootCmd.AddCommand(listCmd)
+	RootCmd.AddCommand(endpointsCmd)
 }
