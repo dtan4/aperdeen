@@ -7,7 +7,7 @@ Amazon API Gateway client and local proxy
 
 ## Commands
 
-### `aperdeen endopoints APINAME`
+### `aperdeen endpoints APINAME`
 
 List API endpoints
 
